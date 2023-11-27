@@ -1,5 +1,6 @@
 # Example file showing a circle moving on screen
 import pygame
+import random
 
 # test
 # pygame setup
@@ -9,13 +10,19 @@ window_height = 720
 paddle_width = 30
 paddle_height = 250
 paddle_dist_from_wall = 50
+ball_radius = 30
 screen = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
 running = True
 dt = 0
-player_speed = 300
+
+player_speed = 1000
+randomness = 4
+begin_random = (10, 20)
 
 ball_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
+ball_velocity = pygame.Vector2(random.choice([-1, 1])*random.randint(begin_random[0], begin_random[1]), \
+                               random.choice([-1, 1])*random.randint(begin_random[0], begin_random[1]))
 left_paddle_pos = pygame.Vector2(paddle_dist_from_wall, (window_height-paddle_height)/2)
 right_paddle_pos = pygame.Vector2(window_width-paddle_dist_from_wall-paddle_width, (window_height-paddle_height)/2)
 
@@ -30,7 +37,7 @@ while running:
     screen.fill("black")
 
     # draw all the objects
-    pygame.draw.circle(screen, "red", ball_pos, 30)
+    pygame.draw.circle(screen, "red", ball_pos, ball_radius)
     pygame.draw.rect(screen, "blue", (left_paddle_pos.x, left_paddle_pos.y, paddle_width, paddle_height))
     pygame.draw.rect(screen, "blue", (right_paddle_pos.x, right_paddle_pos.y, paddle_width, paddle_height))
 
@@ -52,6 +59,21 @@ while running:
         right_paddle_pos.y += player_speed * dt
         if right_paddle_pos.y > window_height-paddle_height:
             right_paddle_pos.y = window_height-paddle_height
+    
+    # ball movement
+    if ball_pos.y - ball_radius < 0:
+        ball_velocity.y = -ball_velocity.y
+    if ball_pos.y + ball_radius > window_height:
+        ball_velocity.y = -ball_velocity.y
+    if ball_pos.x - ball_radius < left_paddle_pos.x + paddle_width \
+                    and left_paddle_pos.y + paddle_height + ball_radius > ball_pos.y > left_paddle_pos.y - ball_radius:
+        ball_velocity.x = -ball_velocity.x + random.randint(-randomness, randomness)
+    if ball_pos.x + ball_radius > right_paddle_pos.x \
+                    and right_paddle_pos.y + paddle_height + ball_radius > ball_pos.y > right_paddle_pos.y - ball_radius:
+        ball_velocity.x = -ball_velocity.x + random.randint(-randomness, randomness)
+
+    ball_pos.x += ball_velocity.x
+    ball_pos.y += ball_velocity.y
 
     # flip() the display to put your work on screen
     pygame.display.flip()
