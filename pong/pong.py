@@ -9,7 +9,7 @@ window_width = 1280
 window_height = 720
 paddle_width = 30
 paddle_height = 250
-paddle_dist_from_wall = 50
+paddle_dist_from_wall = 0
 ball_radius = 30
 screen = pygame.display.set_mode((window_width, window_height))
 clock = pygame.time.Clock()
@@ -67,13 +67,20 @@ while running:
         ball_velocity.y = -ball_velocity.y
     if ball_pos.x - ball_radius < left_paddle_pos.x + paddle_width \
                     and left_paddle_pos.y + paddle_height + ball_radius > ball_pos.y > left_paddle_pos.y - ball_radius:
-        ball_velocity.x = -ball_velocity.x + random.randint(-randomness, randomness)
+        ball_velocity.x = -ball_velocity.x #+ random.randint(-randomness, randomness)
+        # if ball_velocity >= 25:
+        #     ball_velocity -= random.randint(-3, -1)
+        # elif ball_velocity <= 10:
+        #     ball_velocity += random.randint(1, 3)
+        # else:
     if ball_pos.x + ball_radius > right_paddle_pos.x \
                     and right_paddle_pos.y + paddle_height + ball_radius > ball_pos.y > right_paddle_pos.y - ball_radius:
-        ball_velocity.x = -ball_velocity.x + random.randint(-randomness, randomness)
+        ball_velocity.x = -ball_velocity.x #+ random.randint(-randomness, randomness)
 
     ball_pos.x += ball_velocity.x
     ball_pos.y += ball_velocity.y
+
+
 
     # flip() the display to put your work on screen
     pygame.display.flip()
