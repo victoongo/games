@@ -33,6 +33,23 @@ ball_velocity = pygame.Vector2(random.choice([-1, 1])*random.randint(beginning_b
 left_paddle_pos = pygame.Vector2(paddle_dist_from_wall, (window_height-paddle_height)/2)
 right_paddle_pos = pygame.Vector2(window_width-paddle_dist_from_wall-paddle_width, (window_height-paddle_height)/2)
 
+white = (255, 255, 255)
+green = (0, 255, 0)
+blue = (0, 0, 128)
+
+font = pygame.font.Font('freesansbold.ttf', 32)
+ 
+# create a text surface object,
+# on which text is drawn on it.
+text = font.render('GeeksForGeeks', True, green, blue)
+ 
+# create a rectangular object for the
+# text surface object
+textRect = text.get_rect()
+ 
+# set the center of the rectangular object.
+textRect.center = (window_width // 2, window_height // 2)
+
 while running:
     # poll for events
     # pygame.QUIT event means the user clicked X to close your window
@@ -40,7 +57,17 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    # set of keys pressed
+    # fill the screen with a color to wipe away anything from last frame
+    screen.fill("black")
+
+    screen.blit(text, textRect)
+
+    # draw all the objects
+    pygame.draw.circle(screen, "red", ball_pos, ball_radius)
+    pygame.draw.rect(screen, "blue", (left_paddle_pos.x, left_paddle_pos.y, paddle_width, paddle_height))
+    pygame.draw.rect(screen, "blue", (right_paddle_pos.x, right_paddle_pos.y, paddle_width, paddle_height))
+
+    # keybinds
     keys = pygame.key.get_pressed()
 
     if game_on:
