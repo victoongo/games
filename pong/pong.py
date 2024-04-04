@@ -21,13 +21,13 @@ player_speed = 1200
 window_width = 1280
 window_height = 720
 
-paddle_width = 30
+paddle_width = 300
 paddle_height = 250
 paddle_dist_from_wall = 0
 
 ball_radius = 30
 ball_speed_variation = (1, 3)
-beginning_ball_speed = (20, 30)
+beginning_ball_speed = (12, 20)
 
 ball_color = red
 left_paddle_color = blue
@@ -139,11 +139,16 @@ while running:
             if right_paddle_pos.y > window_height - paddle_height:
                 right_paddle_pos.y = window_height - paddle_height
 
-        # ball movement
+        # ball bounce off walls:
+        # top wall
         if ball_pos.y - ball_radius < 0:
             ball_velocity.y = -ball_velocity.y
+        # bottom wall
         if ball_pos.y + ball_radius > window_height:
             ball_velocity.y = -ball_velocity.y
+        
+        # ball bounce off left paddle:
+        # front face
         if (
             ball_pos.x - ball_radius < left_paddle_pos.x + paddle_width
             and left_paddle_pos.y + paddle_height + ball_radius
@@ -152,6 +157,22 @@ while running:
         ):
             ball_velocity.x *= -1
             bounced = True
+        # top face
+        if (ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
+            and left_paddle_pos.x + paddle_width + ball_radius
+            > ball_pos.x
+            > left_paddle_pos.x - ball_radius
+        ):
+            ball_velocity.y *= -1
+        # bottom face
+        if (ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
+            and left_paddle_pos.x + paddle_width + ball_radius
+            > ball_pos.x
+            > left_paddle_pos.x - ball_radius
+        ):
+            ball_velocity.y *= -1
+            print("yay!")
+            
         if (
             ball_pos.x + ball_radius > right_paddle_pos.x
             and right_paddle_pos.y + paddle_height + ball_radius
