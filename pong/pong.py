@@ -21,7 +21,7 @@ player_speed = 1200
 window_width = 1280
 window_height = 720
 
-paddle_width = 300
+paddle_width = 30
 paddle_height = 250
 paddle_dist_from_wall = 0
 
@@ -53,6 +53,9 @@ bounced = None
 game_on = True
 
 # collision engine variable setup
+points = [0, 0]
+
+
 ball_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 ball_velocity = pygame.Vector2(
     random.choice([-1, 1])
@@ -68,6 +71,23 @@ right_paddle_pos = pygame.Vector2(
     (window_height - paddle_height) / 2,
 )
 
+white = (255, 255, 255)
+green = (0, 255, 0)
+blue = (0, 0, 128)
+
+font = pygame.font.Font("freesansbold.ttf", 32)
+
+# create a text surface object,
+# on which text is drawn on it.
+text = font.render("GeeksForGeeks", True, green, blue)
+
+# create a rectangular object for the
+# text surface object
+textRect = text.get_rect()
+
+# set the center of the rectangular object.
+textRect.center = (window_width // 2, window_height // 2)
+
 # game loop
 while running:
     # pygame.QUIT event means the user clicked X to close your window
@@ -76,6 +96,25 @@ while running:
             running = False
 
     # keybind list
+    # fill the screen with a color to wipe away anything from last frame
+    screen.fill("black")
+
+    screen.blit(text, textRect)
+
+    # draw all the objects
+    pygame.draw.circle(screen, "red", ball_pos, ball_radius)
+    pygame.draw.rect(
+        screen,
+        "blue",
+        (left_paddle_pos.x, left_paddle_pos.y, paddle_width, paddle_height),
+    )
+    pygame.draw.rect(
+        screen,
+        "blue",
+        (right_paddle_pos.x, right_paddle_pos.y, paddle_width, paddle_height),
+    )
+
+    # keybinds
     keys = pygame.key.get_pressed()
 
     # stops the game if someone loses, and the score updater
@@ -141,12 +180,13 @@ while running:
 
         # ball bounce off walls:
         # top wall
+        # ball movement
         if ball_pos.y - ball_radius < 0:
             ball_velocity.y = -ball_velocity.y
         # bottom wall
         if ball_pos.y + ball_radius > window_height:
             ball_velocity.y = -ball_velocity.y
-        
+
         # ball bounce off left paddle:
         # front face
         if (
@@ -158,21 +198,23 @@ while running:
             ball_velocity.x *= -1
             bounced = True
         # top face
-        if (ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
+        if (
+            ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
             and left_paddle_pos.x + paddle_width + ball_radius
             > ball_pos.x
             > left_paddle_pos.x - ball_radius
         ):
             ball_velocity.y *= -1
         # bottom face
-        if (ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
+        if (
+            ball_pos.y - ball_radius < left_paddle_pos.y + paddle_height
             and left_paddle_pos.x + paddle_width + ball_radius
             > ball_pos.x
             > left_paddle_pos.x - ball_radius
         ):
             ball_velocity.y *= -1
             print("yay!")
-            
+
         if (
             ball_pos.x + ball_radius > right_paddle_pos.x
             and right_paddle_pos.y + paddle_height + ball_radius
@@ -203,7 +245,7 @@ while running:
         ball_pos.y += ball_velocity.y
 
     # prass P to start a new game and keep the score
-    if (keys[pygame.K_p] or auto_restart) and game_on == False:
+    if (keys[pygame.K_p] or auto_restart) and not game_on:
         game_on = True
         ball_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
         ball_velocity = pygame.Vector2(
