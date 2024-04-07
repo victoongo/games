@@ -8,6 +8,12 @@ score = 0
 lives = 3
 time = 0
 started = False
+# initialize stuff
+pg.init()
+screen = pg.display.set_mode((WIDTH, HEIGHT))
+clock = pg.time.Clock()
+running = True
+started = True
 
 
 class ImageInfo:
@@ -40,31 +46,31 @@ class ImageInfo:
 # debris images - debris1_brown.png, debris2_brown.png, debris3_brown.png, debris4_brown.png
 #                 debris1_blue.png, debris2_blue.png, debris3_blue.png, debris4_blue.png, debris_blend.png
 debris_info = ImageInfo([320, 240], [640, 480])
-debris_image = pg.image.load("rice_rocks/assets/debris2_blue.png")
+debris_image = pg.image.load("rice_rocks/assets/debris2_blue.png").convert()
 
 # nebula images - nebula_brown.png, nebula_blue.png
 nebula_info = ImageInfo([400, 300], [800, 600])
-nebula_image = pg.image.load("rice_rocks/assets/nebula_blue.f2014.png")
+nebula_image = pg.image.load("rice_rocks/assets/nebula_blue.f2014.png").convert()
 
 # splash image
 splash_info = ImageInfo([200, 150], [400, 300])
-splash_image = pg.image.load("rice_rocks/assets/splash.png")
+splash_image = pg.image.load("rice_rocks/assets/splash.png").convert()
 
 # ship image
 ship_info = ImageInfo([45, 45], [90, 90], 35)
-ship_image = pg.image.load("rice_rocks/assets/double_ship.png")
+ship_image = pg.image.load("rice_rocks/assets/double_ship.png").convert()
 
 # missile image - shot1.png, shot2.png, shot3.png
 missile_info = ImageInfo([5, 5], [10, 10], 3, 50)
-missile_image = pg.image.load("rice_rocks/assets/shot2.png")
+missile_image = pg.image.load("rice_rocks/assets/shot2.png").convert()
 
 # asteroid images - asteroid_blue.png, asteroid_brown.png, asteroid_blend.png
 asteroid_info = ImageInfo([45, 45], [90, 90], 40)
-asteroid_image = pg.image.load("rice_rocks/assets/asteroid_blue.png")
+asteroid_image = pg.image.load("rice_rocks/assets/asteroid_blue.png").convert()
 
 # animated explosion - explosion_orange.png, explosion_blue.png, explosion_blue2.png, explosion_alpha.png
 explosion_info = ImageInfo([64, 64], [128, 128], 17, 24, True)
-explosion_image = pg.image.load("rice_rocks/assets/explosion_alpha.png")
+explosion_image = pg.image.load("rice_rocks/assets/explosion_alpha.png").convert()
 
 # sound assets purchased from sounddogs.com, please do not redistribute
 # .ogg versions of sounds are also available, just replace .mp3 by .ogg
@@ -99,9 +105,9 @@ class Ship:
         self.image_size = info.get_size()
         self.radius = info.get_radius()
 
-    def draw(self, canvas):
+    def draw(self, screen):
         if self.thrust:
-            canvas.draw_image(
+            screen.draw_image(
                 self.image,
                 [self.image_center[0] + self.image_size[0], self.image_center[1]],
                 self.image_size,
@@ -110,7 +116,7 @@ class Ship:
                 self.angle,
             )
         else:
-            canvas.draw_image(
+            screen.draw_image(
                 self.image,
                 self.image_center,
                 self.image_size,
@@ -118,7 +124,7 @@ class Ship:
                 self.image_size,
                 self.angle,
             )
-        # canvas.draw_circle(self.pos, self.radius, 1, "White", "White")
+        # screen.draw_circle(self.pos, self.radius, 1, "White", "White")
 
     def update(self):
         # update angle
@@ -197,8 +203,8 @@ class Sprite(pg.sprite.Sprite):
             sound.rewind()
             sound.play()
 
-    def draw(self, canvas):
-        canvas.draw_image(
+    def draw(self, screen):
+        screen.draw_image(
             self.image,
             self.image_center,
             self.image_size,
@@ -271,42 +277,87 @@ def click(pos):
         started = True
 
 
-def draw(canvas):
-    global time, started, score, lives
+# timer handler that spawns a rock
+def rock_spawner():
+    global rock_group
+    rock_pos = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT)]
+    rock_vel = [random.random() * 0.6 - 0.3, random.random() * 0.6 - 0.3]
+    rock_avel = random.random() * 0.2 - 0.1
+    if len(rock_group) <= 12:
+        rock_group.add(
+            Sprite(rock_pos, rock_vel, 0, rock_avel, asteroid_image, asteroid_info)
+        )
+
+
+# initialize ship and two sprites
+my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
+rock_group = pg.sprite.Group()
+missile_group = pg.sprite.Group()
+# Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
+
+screen.blit(splash_image, (0, 0))
+pg.display.flip()
+
+while running:
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            running = False
+
+    # draw splash screen if not started
+    # if not started:
+    # screen.draw_image(
+    #     splash_image,
+    #     splash_info.get_center(),
+    #     splash_info.get_size(),
+    #     [WIDTH / 2, HEIGHT / 2],
+    #     splash_info.get_size(),
+    # )
+
+    keys = pg.key.get_pressed()
+
+    # key handlers to control ship
+    if keys[pg.K_LEFT]:
+        my_ship.decrement_angle_vel()
+    elif keys[pg.K_RIGHT]:
+        my_ship.increment_angle_vel()
+    elif keys[pg.K_UP]:
+        my_ship.set_thrust(True)
+    elif keys[pg.K_SPACE]:
+        my_ship.shoot()
 
     # animiate background
     time += 1
     wtime = (time / 4) % WIDTH
     center = debris_info.get_center()
     size = debris_info.get_size()
-    canvas.draw_image(
-        nebula_image,
-        nebula_info.get_center(),
-        nebula_info.get_size(),
-        [WIDTH / 2, HEIGHT / 2],
-        [WIDTH, HEIGHT],
-    )
-    canvas.draw_image(
-        debris_image, center, size, (wtime - WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
-    )
-    canvas.draw_image(
-        debris_image, center, size, (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
-    )
+    # screen.draw_image(
+    #     nebula_image,
+    #     nebula_info.get_center(),
+    #     nebula_info.get_size(),
+    #     [WIDTH / 2, HEIGHT / 2],
+    #     [WIDTH, HEIGHT],
+    # )
+    # screen.draw_image(
+    #     debris_image, center, size, (wtime - WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
+    # )
+    # screen.draw_image(
+    #     debris_image, center, size, (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
+    # )
 
     # draw UI
-    canvas.draw_text("Lives", [50, 50], 22, "White")
-    canvas.draw_text("Score", [680, 50], 22, "White")
-    canvas.draw_text(str(lives), [50, 80], 22, "White")
-    canvas.draw_text(str(score), [680, 80], 22, "White")
+    # screen.draw_text("Lives", [50, 50], 22, "White")
+    # screen.draw_text("Score", [680, 50], 22, "White")
+    # screen.draw_text(str(lives), [50, 80], 22, "White")
+    # screen.draw_text(str(score), [680, 80], 22, "White")
 
     # draw ship and sprites
-    my_ship.draw(canvas)
-    for rock in rock_group:
-        rock.draw(canvas)
-    for missile in missile_group:
-        missile.draw(canvas)
-        print(missile.get_lifespan())
-        print(missile.get_age())
+    # my_ship.draw(screen)
+    # for rock in rock_group:
+    #     rock.draw(screen)
+    # for missile in missile_group:
+    #     missile.draw(screen)
+    #     print(missile.get_lifespan())
+    #     print(missile.get_age())
 
     # update ship and sprites
     my_ship.update()
@@ -323,56 +374,14 @@ def draw(canvas):
         lives -= 1
 
     # draw splash screen if not started
-    if not started:
-        canvas.draw_image(
-            splash_image,
-            splash_info.get_center(),
-            splash_info.get_size(),
-            [WIDTH / 2, HEIGHT / 2],
-            splash_info.get_size(),
-        )
-
-
-# timer handler that spawns a rock
-def rock_spawner():
-    global rock_group
-    rock_pos = [random.randrange(0, WIDTH), random.randrange(0, HEIGHT)]
-    rock_vel = [random.random() * 0.6 - 0.3, random.random() * 0.6 - 0.3]
-    rock_avel = random.random() * 0.2 - 0.1
-    if len(rock_group) <= 12:
-        rock_group.add(
-            Sprite(rock_pos, rock_vel, 0, rock_avel, asteroid_image, asteroid_info)
-        )
-
-
-# initialize stuff
-pg.init()
-screen = pg.display.set_mode((WIDTH, HEIGHT))
-clock = pg.time.Clock()
-running = True
-
-# initialize ship and two sprites
-my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
-rock_group = pg.sprite.Group()
-missile_group = pg.sprite.Group()
-# Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
-
-
-while running:
-    for event in pg.event.get():
-        if event.type == pg.QUIT:
-            running = False
-
-    keys = pg.key.get_pressed()
-
-    # key handlers to control ship
-    if keys[pg.K_LEFT]:
-        my_ship.decrement_angle_vel()
-    elif keys[pg.K_RIGHT]:
-        my_ship.increment_angle_vel()
-    elif keys[pg.K_UP]:
-        my_ship.set_thrust(True)
-    elif keys[pg.K_SPACE]:
-        my_ship.shoot()
+    # if not started:
+    #     # screen.draw_image(
+    #     #     splash_image,
+    #     #     splash_info.get_center(),
+    #     #     splash_info.get_size(),
+    #     #     [WIDTH / 2, HEIGHT / 2],
+    #     #     splash_info.get_size(),
+    #     # )
+    #     screen.blit(splash_image, (0, 0))
 
     clock.tick(60)

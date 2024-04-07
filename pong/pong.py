@@ -16,7 +16,7 @@ eh = (200, 50, 100)
 auto_restart = False
 fps = 60
 bg_color = orange
-player_speed = 1200
+player_speed = 800
 
 window_width = 1280
 window_height = 720
@@ -26,8 +26,8 @@ paddle_height = 250
 paddle_dist_from_wall = 0
 
 ball_radius = 30
-ball_speed_variation = (1, 3)
-beginning_ball_speed = (12, 20)
+ball_speed_variation = (1, 2)
+beginning_ball_speed = (4, 6)
 
 ball_color = red
 left_paddle_color = blue
