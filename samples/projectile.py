@@ -9,7 +9,7 @@ class Projectile(pg.sprite.Sprite):
     def __init__(self, pos, game_area):
         super().__init__()
         self.image = pg.Surface((5, 5))
-        self.image.fill(pg.Color('aquamarine2'))
+        self.image.fill(pg.Color("aquamarine2"))
         self.rect = self.image.get_rect(center=pos)
         self.vel = Vector2(2, 0).rotate(random.randrange(360))
         self.pos = Vector2(pos)
@@ -25,9 +25,10 @@ class Projectile(pg.sprite.Sprite):
 def main():
     screen = pg.display.set_mode((640, 480))
     game_area = pg.Rect(60, 60, 520, 360)
-    game_area_color = pg.Color('aquamarine2')
+    game_area_color = pg.Color("aquamarine2")
     clock = pg.time.Clock()
-    all_sprites = pg.sprite.Group(Projectile(game_area.center, game_area))
+    # all_sprites = pg.sprite.Group(Projectile(game_area.center, game_area))
+    all_sprites = pg.sprite.Group()
 
     done = False
 
@@ -47,7 +48,7 @@ def main():
         clock.tick(60)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     pg.init()
     main()
     pg.quit()

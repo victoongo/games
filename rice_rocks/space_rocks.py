@@ -1,11 +1,9 @@
-# implementation of Spaceship - program template for RiceRocks
 import pygame as pg
 import math
 import random
 
-# globals for user interface
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1200
+HEIGHT = 900
 score = 0
 lives = 3
 time = 0
@@ -42,39 +40,40 @@ class ImageInfo:
 # debris images - debris1_brown.png, debris2_brown.png, debris3_brown.png, debris4_brown.png
 #                 debris1_blue.png, debris2_blue.png, debris3_blue.png, debris4_blue.png, debris_blend.png
 debris_info = ImageInfo([320, 240], [640, 480])
-debris_image = pg.image.load("assets/debris2_blue.png")
+debris_image = pg.image.load("rice_rocks/assets/debris2_blue.png")
 
 # nebula images - nebula_brown.png, nebula_blue.png
 nebula_info = ImageInfo([400, 300], [800, 600])
-nebula_image = pg.image.load("assets/nebula_blue.f2014.png")
+nebula_image = pg.image.load("rice_rocks/assets/nebula_blue.f2014.png")
 
 # splash image
 splash_info = ImageInfo([200, 150], [400, 300])
-splash_image = pg.image.load("assets/splash.png")
+splash_image = pg.image.load("rice_rocks/assets/splash.png")
 
 # ship image
 ship_info = ImageInfo([45, 45], [90, 90], 35)
-ship_image = pg.image.load("assets/double_ship.png")
+ship_image = pg.image.load("rice_rocks/assets/double_ship.png")
 
 # missile image - shot1.png, shot2.png, shot3.png
 missile_info = ImageInfo([5, 5], [10, 10], 3, 50)
-missile_image = pg.image.load("assets/shot2.png")
+missile_image = pg.image.load("rice_rocks/assets/shot2.png")
 
 # asteroid images - asteroid_blue.png, asteroid_brown.png, asteroid_blend.png
 asteroid_info = ImageInfo([45, 45], [90, 90], 40)
-asteroid_image = pg.image.load("assets/asteroid_blue.png")
+asteroid_image = pg.image.load("rice_rocks/assets/asteroid_blue.png")
 
 # animated explosion - explosion_orange.png, explosion_blue.png, explosion_blue2.png, explosion_alpha.png
 explosion_info = ImageInfo([64, 64], [128, 128], 17, 24, True)
-explosion_image = pg.image.load("assets/explosion_alpha.png")
+explosion_image = pg.image.load("rice_rocks/assets/explosion_alpha.png")
 
 # sound assets purchased from sounddogs.com, please do not redistribute
 # .ogg versions of sounds are also available, just replace .mp3 by .ogg
-soundtrack = pg.sound_load("assets/soundtrack.mp3")
-missile_sound = pg.sound_load("assets/missile.mp3")
-missile_sound.set_volume(0.5)
-ship_thrust_sound = pg.sound_load("assets/thrust.mp3")
-explosion_sound = pg.sound_load("assets/explosion.mp3")
+pg.mixer.init()
+pg.mixer.music.set_volume(0.5)
+soundtrack = pg.mixer.music.load("rice_rocks/assets/soundtrack.mp3")
+missile_sound = pg.mixer.music.load("rice_rocks/assets/missile.mp3")
+ship_thrust_sound = pg.mixer.music.load("rice_rocks/assets/thrust.mp3")
+explosion_sound = pg.mixer.music.load("rice_rocks/assets/explosion.mp3")
 
 
 # helper functions to handle transformations
@@ -160,7 +159,7 @@ class Ship:
             self.pos[1] + self.radius * forward[1],
         ]
         missile_vel = [self.vel[0] + 6 * forward[0], self.vel[1] + 6 * forward[1]]
-        rock_group.add(
+        missile_group.add(
             Sprite(
                 missile_pos,
                 missile_vel,
@@ -180,8 +179,9 @@ class Ship:
 
 
 # Sprite class
-class Sprite:
+class Sprite(pg.sprite.Sprite):
     def __init__(self, pos, vel, ang, ang_vel, image, info, sound=None):
+        super().__init__()
         self.pos = [pos[0], pos[1]]
         self.vel = [vel[0], vel[1]]
         self.angle = ang
@@ -346,15 +346,16 @@ def rock_spawner():
 
 
 # initialize stuff
+pg.init()
+screen = pg.display.set_mode((WIDTH, HEIGHT))
 clock = pg.time.Clock()
 running = True
 
 # initialize ship and two sprites
 my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info)
-rock_group = set([])
-missile_group = set(
-    []
-)  # Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
+rock_group = pg.sprite.Group()
+missile_group = pg.sprite.Group()
+# Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
 
 
 while running:
