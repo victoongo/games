@@ -2,8 +2,8 @@ import pygame as pg
 import math
 import random
 
-WIDTH = 1200
-HEIGHT = 900
+WIDTH = 800
+HEIGHT = 600
 score = 0
 lives = 3
 time = 0
@@ -72,8 +72,6 @@ asteroid_image = pg.image.load("rice_rocks/assets/asteroid_blue.png").convert()
 explosion_info = ImageInfo([64, 64], [128, 128], 17, 24, True)
 explosion_image = pg.image.load("rice_rocks/assets/explosion_alpha.png").convert()
 
-# sound assets purchased from sounddogs.com, please do not redistribute
-# .ogg versions of sounds are also available, just replace .mp3 by .ogg
 pg.mixer.init()
 pg.mixer.music.set_volume(0.5)
 soundtrack = pg.mixer.music.load("rice_rocks/assets/soundtrack.mp3")
@@ -107,24 +105,9 @@ class Ship:
 
     def draw(self, screen):
         if self.thrust:
-            screen.draw_image(
-                self.image,
-                [self.image_center[0] + self.image_size[0], self.image_center[1]],
-                self.image_size,
-                self.pos,
-                self.image_size,
-                self.angle,
-            )
+            screen.blit(self.image, self.pos)
         else:
-            screen.draw_image(
-                self.image,
-                self.image_center,
-                self.image_size,
-                self.pos,
-                self.image_size,
-                self.angle,
-            )
-        # screen.draw_circle(self.pos, self.radius, 1, "White", "White")
+            screen.blit(self.image, self.pos)
 
     def update(self):
         # update angle
@@ -204,14 +187,7 @@ class Sprite(pg.sprite.Sprite):
             sound.play()
 
     def draw(self, screen):
-        screen.draw_image(
-            self.image,
-            self.image_center,
-            self.image_size,
-            self.pos,
-            self.image_size,
-            self.angle,
-        )
+        screen.blit(self.image, self.image_center)
 
     def update(self):
         # update angle
@@ -295,23 +271,11 @@ rock_group = pg.sprite.Group()
 missile_group = pg.sprite.Group()
 # Sprite([2 * WIDTH / 3, 2 * HEIGHT / 3], [-1,1], 0, 0, missile_image, missile_info, missile_sound)
 
-screen.blit(splash_image, (0, 0))
-pg.display.flip()
 
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
-
-    # draw splash screen if not started
-    # if not started:
-    # screen.draw_image(
-    #     splash_image,
-    #     splash_info.get_center(),
-    #     splash_info.get_size(),
-    #     [WIDTH / 2, HEIGHT / 2],
-    #     splash_info.get_size(),
-    # )
 
     keys = pg.key.get_pressed()
 
@@ -330,20 +294,9 @@ while running:
     wtime = (time / 4) % WIDTH
     center = debris_info.get_center()
     size = debris_info.get_size()
-    # screen.draw_image(
-    #     nebula_image,
-    #     nebula_info.get_center(),
-    #     nebula_info.get_size(),
-    #     [WIDTH / 2, HEIGHT / 2],
-    #     [WIDTH, HEIGHT],
-    # )
-    # screen.draw_image(
-    #     debris_image, center, size, (wtime - WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
-    # )
-    # screen.draw_image(
-    #     debris_image, center, size, (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT)
-    # )
-
+    screen.blit(nebula_image, (0, 0))
+    screen.blit(debris_image, (wtime - WIDTH / 2, HEIGHT / 2))
+    screen.blit(debris_image, (wtime + WIDTH / 2, HEIGHT / 2))
     # draw UI
     # screen.draw_text("Lives", [50, 50], 22, "White")
     # screen.draw_text("Score", [680, 50], 22, "White")
@@ -351,13 +304,13 @@ while running:
     # screen.draw_text(str(score), [680, 80], 22, "White")
 
     # draw ship and sprites
-    # my_ship.draw(screen)
-    # for rock in rock_group:
-    #     rock.draw(screen)
-    # for missile in missile_group:
-    #     missile.draw(screen)
-    #     print(missile.get_lifespan())
-    #     print(missile.get_age())
+    my_ship.draw(screen)
+    for rock in rock_group:
+        rock.draw(screen)
+    for missile in missile_group:
+        missile.draw(screen)
+        print(missile.get_lifespan())
+        print(missile.get_age())
 
     # update ship and sprites
     my_ship.update()
@@ -373,15 +326,18 @@ while running:
     if group_collide(rock_group, my_ship):
         lives -= 1
 
+    rock_spawner()
+
     # draw splash screen if not started
-    # if not started:
-    #     # screen.draw_image(
-    #     #     splash_image,
-    #     #     splash_info.get_center(),
-    #     #     splash_info.get_size(),
-    #     #     [WIDTH / 2, HEIGHT / 2],
-    #     #     splash_info.get_size(),
-    #     # )
-    #     screen.blit(splash_image, (0, 0))
+    if not started:
+        screen.blit(
+            splash_image,
+            (
+                (WIDTH - splash_info.get_size()[0]) / 2,
+                (HEIGHT - splash_info.get_size()[1]) / 2,
+            ),
+        )
+
+    pg.display.flip()
 
     clock.tick(60)
